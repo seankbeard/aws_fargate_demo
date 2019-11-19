@@ -1,0 +1,31 @@
+CREATE CLUSTER
+
+aws cloudformation create-stack --stack-name ecsteststack --template-body file://cloudformation/cluster.yml --capabilities CAPABILITY_IAM
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE PIPELINE
+
+aws cloudformation create-stack --stack-name demowebsite-ci --template-body file://cloudformation/pipeline.yml --capabilities CAPABILITY_IAM --parameters `
+ParameterKey=ECSStackName,ParameterValue="ecsteststack" `
+ParameterKey=GitHubUser,ParameterValue="<user>" `
+ParameterKey=GitHubRepo,ParameterValue="<repo name>" `
+ParameterKey=GitHubBranch,ParameterValue="<branch>" `
+ParameterKey=GitHubToken,ParameterValue="<git token> `
+ParameterKey=ServiceName,ParameterValue=demowebsite 
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE SERVICE
+
+aws cloudformation create-stack --stack-name demowebsite-service --template-body file://cloudformation/service.yml --capabilities CAPABILITY_IAM --parameters `
+ParameterKey=ECSStackName,ParameterValue="ecsteststack" `
+ParameterKey=PipeLine,ParameterValue=demowebsite-ci `
+ParameterKey=ServiceName,ParameterValue=demowebsite `
+ParameterKey=Path,ParameterValue="/webdemo/*" `
+ParameterKey=PathHealthCheck,ParameterValue="/webdemo/index.html" `
+ParameterKey=Priority,ParameterValue=1 `
+ParameterKey=ContainerPort,ParameterValue=80 `
+ParameterKey=ContainerCpu,ParameterValue=256 `
+ParameterKey=ContainerMemory,ParameterValue=512 `
+ParameterKey=DesiredCount,ParameterValue=2 `
+ParameterKey=MinCount,ParameterValue=2 `
+ParameterKey=MaxCount,ParameterValue=6
